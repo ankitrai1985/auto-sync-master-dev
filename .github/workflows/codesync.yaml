@@ -21,8 +21,10 @@ jobs:
           
           if [ -z "$pr_exists" ]; then
             echo "No existing PR found, creating a new PR."
-            # Create the PR and store the PR number in pr_number
-            pr_number=$(gh pr create --base main --head develop --title "Auto Merge Develop -> Main" --body "Automated merge after production deployment." --json number --jq '.[0].number')
+            # Create the PR without the --json flag for PR number
+            gh pr create --base main --head develop --title "Auto Merge Develop -> Main" --body "Automated merge after production deployment."
+            # Now get the PR number using the list command
+            pr_number=$(gh pr list --base main --head develop --json number --jq '.[0].number')
             echo "Pull Request created with number $pr_number"
           else
             echo "PR already exists. Skipping creation."
