@@ -62,6 +62,8 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global commit.gpgSign true
+          git config --global user.signingkey ${{ secrets.DEV_TO_MASTER_SYNC }}
           git fetch origin
           git checkout develop
           git merge --no-ff origin/main -m "Sync main -> develop"
