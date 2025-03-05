@@ -12,12 +12,26 @@ jobs:
         with:
           fetch-depth: 0 # Ensures full history for merging
 
-      - name: Create and Merge PR from Develop to Master
+      - name: Check if a PR exists between Develop and Main
         env:
           GITHUB_TOKEN: ${{ secrets.DEV_TO_MASTER_SYNC }}
         run: |
-          gh pr create --base main --head develop --title "Auto Merge Develop -> Main" --body "Automated merge after production deployment."
-          gh pr merge --auto --squash $(gh pr list --base main --head develop --json number --jq '.[0].number')
+          pr_exists=$(gh pr list --base main --head develop --json number --jq '.[0].number')
+          if [ -z "$pr_exists" ]; then
+            echo "No existing PR found, creating a new PR."
+            pr_number=$(gh pr create --base main --head develop --title "Auto Merge Develop -> Main" --body "Automated merge after production deployment." --json number --jq '.[0].number')
+            echo "Pull Request created with number $pr_number"
+          else
+            echo "PR already exists. Skipping creation."
+            pr_number=$pr_exists
+          fi
+
+      - name: Merge PR into Main
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEV_TO_MASTER_SYNC }}
+        run: |
+          gh pr merge $pr_number --auto --squash --delete-branch
+          echo "PR merged into main"
 
   sync-back-to-develop:
     needs: sync-to-master
@@ -28,7 +42,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Merge Master Back into Develop
+      - name: Merge Main Back into Develop
         env:
           GITHUB_TOKEN: ${{ secrets.DEV_TO_MASTER_SYNC }}
         run: |
@@ -38,3 +52,4 @@ jobs:
           git checkout develop
           git merge --no-ff origin/main -m "Sync main -> develop"
           git push origin develop
+          echo "Main branch successfully merged into Develop"
