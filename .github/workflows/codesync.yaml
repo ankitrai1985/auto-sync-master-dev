@@ -14,7 +14,7 @@ jobs:
 
       - name: Create and Merge PR from Develop to Master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DEV_TO_MASTER_SYNC }}
         run: |
           gh pr create --base master --head develop --title "Auto Merge Develop -> Master" --body "Automated merge after production deployment."
           gh pr merge --auto --squash $(gh pr list --base master --head develop --json number --jq '.[0].number')
@@ -30,7 +30,7 @@ jobs:
 
       - name: Merge Master Back into Develop
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.DEV_TO_MASTER_SYNC }}
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
