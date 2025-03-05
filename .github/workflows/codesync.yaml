@@ -56,16 +56,37 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Merge Main Back into Develop
+      - name: Check if a PR exists between Main and Develop
+        id: pr_check_dev
         env:
           GITHUB_TOKEN: ${{ secrets.DEV_TO_MASTER_SYNC }}
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global commit.gpgSign true
-          git config --global user.signingkey ${{ secrets.DEV_TO_MASTER_SYNC }}
-          git fetch origin
-          git checkout develop
-          git merge --no-ff origin/main -m "Sync main -> develop"
-          git push origin develop
-          echo "Main branch successfully merged into Develop"
+          # Check if a PR exists between main and develop
+          pr_exists=$(gh pr list --base develop --head main --json number --jq '.[0].number')
+
+          if [ -z "$pr_exists" ]; then
+            echo "No existing PR found, creating a new PR."
+            # Create the PR
+            gh pr create --base develop --head main --title "Auto Merge Main -> Develop" --body "Syncing changes from main to develop."
+            # Get the new PR number
+            pr_number=$(gh pr list --base develop --head main --json number --jq '.[0].number')
+            echo "Pull Request created with number $pr_number"
+          else
+            echo "PR already exists. Skipping creation."
+            pr_number=$pr_exists
+          fi
+
+          # Output the PR number for later steps
+          echo "pr_number=$pr_number" >> $GITHUB_ENV
+
+      - name: Merge PR into Develop
+        env:
+          GITHUB_TOKEN: ${{ secrets.DEV_TO_MASTER_SYNC }}
+        run: |
+          echo "PR Number: ${{ env.pr_number }}"
+          if [ -n "${{ env.pr_number }}" ] && [ "${{ env.pr_number }}" != "null" ]; then
+            gh pr merge ${{ env.pr_number }} --auto --squash
+            echo "PR merged into develop"
+          else
+            echo "No PR to merge"
+          fi
