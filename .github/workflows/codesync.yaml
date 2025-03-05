@@ -16,8 +16,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.DEV_TO_MASTER_SYNC }}
         run: |
-          gh pr create --base master --head develop --title "Auto Merge Develop -> Master" --body "Automated merge after production deployment."
-          gh pr merge --auto --squash $(gh pr list --base master --head develop --json number --jq '.[0].number')
+          gh pr create --base main --head develop --title "Auto Merge Develop -> Main" --body "Automated merge after production deployment."
+          gh pr merge --auto --squash $(gh pr list --base main --head develop --json number --jq '.[0].number')
 
   sync-back-to-develop:
     needs: sync-to-master
@@ -36,5 +36,5 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git fetch origin
           git checkout develop
-          git merge --no-ff origin/master -m "Sync master -> develop"
+          git merge --no-ff origin/main -m "Sync main -> develop"
           git push origin develop
