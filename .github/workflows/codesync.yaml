@@ -13,6 +13,7 @@ jobs:
           fetch-depth: 0 # Ensures full history for merging
 
       - name: Check if a PR exists between Develop and Main
+        id: pr_check
         env:
           GITHUB_TOKEN: ${{ secrets.DEV_TO_MASTER_SYNC }}
         run: |
@@ -31,12 +32,16 @@ jobs:
             pr_number=$pr_exists
           fi
 
+          # Output the PR number for later steps
+          echo "pr_number=$pr_number" >> $GITHUB_ENV
+
       - name: Merge PR into Main
         env:
           GITHUB_TOKEN: ${{ secrets.DEV_TO_MASTER_SYNC }}
         run: |
-          if [ -n "$pr_number" ]; then
-            gh pr merge $pr_number --auto --squash --delete-branch
+          echo "PR Number: ${{ env.pr_number }}"
+          if [ -n "${{ env.pr_number }}" ] && [ "${{ env.pr_number }}" != "null" ]; then
+            gh pr merge ${{ env.pr_number }} --auto --squash
             echo "PR merged into main"
           else
             echo "No PR to merge"
