@@ -85,7 +85,7 @@ jobs:
         run: |
           echo "PR Number: ${{ env.pr_number }}"
           if [ -n "${{ env.pr_number }}" ] && [ "${{ env.pr_number }}" != "null" ]; then
-            gh pr merge ${{ env.pr_number }} --merge
+            gh pr merge ${{ env.pr_number }} --rebase
             echo "PR merged into develop"
           else
             echo "No PR to merge"
