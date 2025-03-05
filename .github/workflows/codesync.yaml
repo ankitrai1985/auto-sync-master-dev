@@ -41,7 +41,7 @@ jobs:
         run: |
           echo "PR Number: ${{ env.pr_number }}"
           if [ -n "${{ env.pr_number }}" ] && [ "${{ env.pr_number }}" != "null" ]; then
-            gh pr merge ${{ env.pr_number }} --auto --squash
+            gh pr merge ${{ env.pr_number }} --squash
             echo "PR merged into main"
           else
             echo "No PR to merge"
@@ -85,7 +85,7 @@ jobs:
         run: |
           echo "PR Number: ${{ env.pr_number }}"
           if [ -n "${{ env.pr_number }}" ] && [ "${{ env.pr_number }}" != "null" ]; then
-            gh pr merge ${{ env.pr_number }} --auto --squash
+            gh pr merge ${{ env.pr_number }} --squash
             echo "PR merged into develop"
           else
             echo "No PR to merge"
